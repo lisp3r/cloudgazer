@@ -1,8 +1,9 @@
-import json
 import requests
 import getpass
 import socket
 from prettytable import PrettyTable
+
+from config import API_KEY
 
 
 def banner():
@@ -17,20 +18,9 @@ def banner():
 
 
 def nslookup(domain):
-    ip_list = []
-    try:
-        result = socket.getaddrinfo(domain, 0, 0, 0, 0)
-
-        for r in result:
-            if str(r[0]).endswith('AF_INET'):
-                ip_list.append(r[-1][0])
-
-        ip_list = list(set(ip_list))
-
-        return ip_list
-
-    except:
-        return ip_list
+    result = socket.getaddrinfo(domain, 0, 0, 0, 0)
+    ipv4_list = list(set([r[-1][0] for r in result if r[0] == 2]))
+    return ipv4_list
 
 
 def find_real_ip(ip_list, HEADERS):
@@ -84,16 +74,19 @@ def main():
     ip_list = nslookup(domain)
 
     results = find_real_ip(ip_list, HEADERS)
-
     print_result(results)
 
 
 if __name__ == '__main__':
     banner()
 
-    api_key = getpass.getpass("Enter Criminal IP API KEY : ")
+    if API_KEY:
+        print(f'Using API KEY: {API_KEY[:10]}...')
+    else:
+        API_KEY = getpass.getpass("Enter Criminal IP API KEY : ")
+
     HEADERS = {
-        "x-api-key": api_key,
+        "x-api-key": API_KEY,
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
     }
 
